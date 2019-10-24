@@ -1,4 +1,5 @@
-﻿using Discord.Addons.Interactive;
+﻿using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
@@ -16,8 +17,6 @@ namespace DiscordBot.Modules
     public class GameInteractive : InteractiveBase<SocketCommandContext>
     {
         public static List<Hangman> _games = new List<Hangman>();
-        private static short limentPlayer = 1;
-        //private static bool isRunning = false;
 
         [Command("Start")]
         public async Task Start()
@@ -53,9 +52,8 @@ namespace DiscordBot.Modules
             if (game == null)
                 return;
 
+            game.Stop();
             await Context.Guild.Channels.SingleOrDefault(x => x.Id == channel.Id).DeleteAsync();
-
-            game.users.Clear();
             await ReplyAsync($"The Games has stopped");
         }
 
