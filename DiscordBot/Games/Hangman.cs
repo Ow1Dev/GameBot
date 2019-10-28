@@ -19,11 +19,13 @@ namespace DiscordBot.Games
 
         private ulong SelecedUserID = 0;
         private string _Word = "Hangman";
+        private string[] _Words;
+
         private List<char> _GuessedLetter = new List<char>();
         private List<ulong> _GuessedUser = new List<ulong>();
 
-        public Hangman(ulong RoomID, DiscordSocketClient client, ushort MaxPlayer = 4, ushort MinPlayer = 1) 
-            : base(RoomID, client) { _maxUsers = MaxPlayer; _minUsers = MinPlayer; }
+        public Hangman(ulong RoomID, DiscordSocketClient client, string[] Words, ushort MaxPlayer = 4, ushort MinPlayer = 1) 
+            : base(RoomID, client) { _Words = Words; _maxUsers = MaxPlayer; _minUsers = MinPlayer; }
 
         protected override void Startup()
         {
@@ -31,7 +33,15 @@ namespace DiscordBot.Games
             while(_isRunning)
             {
                 waitingForPlayers();
-                
+
+                string newWord = "";
+                do
+                {
+                    Random r = new Random();
+                    newWord = _Words[r.Next(0, _Words.Count())];
+                } while (_Word == newWord);
+                _Word = newWord;
+
                 //Init Game
                 _GuessedLetter.Clear();
                 _HasBegun = true;
@@ -135,10 +145,12 @@ namespace DiscordBot.Games
         private async Task PrintGame(string text)
         {
             var c = string.Join(',', _GuessedLetter.ToArray());
+            var p = PrintNon(_res);
+
             var e = new EmbedBuilder
             {
                 Title = text,
-                Description = PrintNon(_res)
+                Description = p
             }
             .AddField("Lives: ", _Lifes, inline: true)
             .AddField("Gussed Letters", c != "" ? c : "you have not gussed anything", inline: true)
@@ -155,12 +167,17 @@ namespace DiscordBot.Games
             {
                 if (tempString[i] == '*')
                 {
-                    Sout += "* ";
+                    Sout += "*";
+                }
+                else if(tempString[i] == ' ')
+                {
+                    Sout += "\u200b \u200b";
                 }
                 else
                 {
-                    Sout += tempString[i] + " ";
+                    Sout += tempString[i];
                 }
+                Sout += " ";
             }
 
             return Sout;

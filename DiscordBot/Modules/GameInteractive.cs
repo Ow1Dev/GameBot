@@ -8,13 +8,14 @@ using DiscordBot.Games;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DiscordBot.Modules
 {
     [Group("Game")]
-    public class GameInteractive : InteractiveBase<SocketCommandContext>
+    public class GameInteractive : ModuleBase<SocketCommandContext>
     {
         public static List<Hangman> _games = new List<Hangman>();
 
@@ -28,6 +29,22 @@ namespace DiscordBot.Modules
                 return;
             }
 
+            string[] _words = new string[] { "Hang Man!" };
+            var attachments = Context.Message.Attachments;
+            if (attachments.Count == 1)
+            {
+                WebClient myWebClient = new WebClient();
+
+                byte[] buffer = myWebClient.DownloadData(attachments.ElementAt(0).Url);
+
+                string download = Encoding.UTF8.GetString(buffer);
+
+                download = download.Replace("\r\n", "%&");
+                _words = download.Split("%&");
+
+                myWebClient.Dispose();
+            }
+
             RestTextChannel Room = await Context.Guild.CreateTextChannelAsync($"Game-{_games.Count + 1}",x => {
                 x.CategoryId = Category.Id;
             });
@@ -38,7 +55,7 @@ namespace DiscordBot.Modules
                 return;
             }
 
-            Hangman game = new Hangman(Room.Id, Context.Client);
+            Hangman game = new Hangman(Room.Id, Context.Client, _words);
             _games.Add(game);
 
             await ReplyAsync($"A Game Has started on <#{Room.Id}>");
@@ -67,35 +84,6 @@ namespace DiscordBot.Modules
             await game.Force();
             await ReplyAsync($"<#{game._RoomID}> has been forced");
         }
-
-
-        //[Command("Join")]
-        //public async Task Join()
-        //{
-        //    var game = _games.SingleOrDefault(x => x._RoomID == Context.Channel.Id);
-        //    if (game == null)
-        //        return;
-
-        //    var user = Context.Message.Author;
-        //    if (user.IsBot)
-        //        return;
-
-        //    if(game.users.Count >= limentPlayer)
-        //    {
-        //        await ReplyAsync($"{user.Username} Can not joined because there are too many");
-        //        return;
-        //    }
-
-        //    if(game.users.Any(x=> x.Id == user.Id))
-        //    {
-        //        await ReplyAsync($"{user.Username} has already joined");
-        //        return;
-        //    }
-
-        //    game.users.Add(user);
-        //    await ReplyAsync($"{user.Username} has just joined the game");
-        //    Console.WriteLine($"{user.Username} has just joined the game");
-        //}
 
         [Command("List")]
         public async Task ListPlayers(SocketChannel channel)
