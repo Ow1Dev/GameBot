@@ -57,6 +57,18 @@ namespace DiscordBot.Modules
             await ReplyAsync($"The Games has stopped");
         }
 
+        [Command("Force")]
+        public async Task Force(SocketChannel channel)
+        {
+            var game = _games.SingleOrDefault(x => x._RoomID == channel.Id);
+            if (game == null)
+                return;
+
+            await game.Force();
+            await ReplyAsync($"<#{game._RoomID}> has been forced");
+        }
+
+
         //[Command("Join")]
         //public async Task Join()
         //{
@@ -79,7 +91,7 @@ namespace DiscordBot.Modules
         //        await ReplyAsync($"{user.Username} has already joined");
         //        return;
         //    }
-                   
+
         //    game.users.Add(user);
         //    await ReplyAsync($"{user.Username} has just joined the game");
         //    Console.WriteLine($"{user.Username} has just joined the game");

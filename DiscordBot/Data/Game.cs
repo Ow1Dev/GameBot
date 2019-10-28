@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace DiscordBot.Data
 {
     public abstract class Game
     {
+        protected bool _IsForce = false;
         public ulong _RoomID { get; set; }
         public List<SocketUser> users { get; set; } = new List<SocketUser>();
 
@@ -36,12 +38,25 @@ namespace DiscordBot.Data
             await textc.SendMessageAsync(text);
         }
 
+        public async Task Force()
+        {
+            _IsForce = true;
+        }
+
         public void SendMessege(string text)
         {
             SocketGuild guild = _client.Guilds.First();
             SocketTextChannel textc = guild.GetTextChannel(_RoomID);
 
             textc.SendMessageAsync(text).Wait();
+        }
+
+        public async Task SendEmbedMessege(Embed embed)
+        {
+            SocketGuild guild = _client.Guilds.First();
+            SocketTextChannel textc = guild.GetTextChannel(_RoomID);
+
+            await textc.SendMessageAsync(embed: embed);
         }
 
         public async Task MessegeResive(SocketUserMessage message)
