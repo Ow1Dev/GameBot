@@ -5,6 +5,7 @@ using DiscordBot.Data;
 using DiscordBot.Modules;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -30,6 +31,16 @@ namespace DiscordBot
 
         public async Task RunBotAsync()
         {
+            string lines = File.ReadAllText("./config.txt");
+            int start = lines.IndexOf("BotToken=");
+            if(start < 0)
+            {
+                Console.WriteLine("Can not find botToken");
+                return;
+            }
+
+            string bott = lines.Substring(9, lines.Length - 9);
+
             _client = new DiscordSocketClient();
             _commands = new CommandService();
 
@@ -39,7 +50,7 @@ namespace DiscordBot
                 .AddSingleton(_commands)
                 .BuildServiceProvider();
 
-            string botToken = "NjM2NDQ2NTY1MDkwNzIxNzk0.Xa_0Ng.eIZEeqj_UTepe9Lk2mV9oMqdacI";
+            string botToken = bott;
 
             _client.Log += _client_Log;
 
