@@ -24,7 +24,7 @@ namespace DiscordBot.Modules
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
             {
-                await Context.Channel.SendMessageAsync(":x: You are not the gamemaster. " + Context.User.Mention);
+                await ReplyAndDeleteAsync(":x: You are not the gamemaster. " + Context.User.Mention, timeout: new TimeSpan(0, 0, 15));
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace DiscordBot.Modules
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
             {
-                await Context.Channel.SendMessageAsync(":x: You are not the gamemaster. " + Context.User.Mention);
+                await ReplyAndDeleteAsync(":x: You are not the gamemaster. " + Context.User.Mention, timeout: new TimeSpan(0, 0, 15));
                 return;
             }
 
@@ -84,7 +84,7 @@ namespace DiscordBot.Modules
             game.Stop();
             await Context.Guild.Channels.SingleOrDefault(x => x.Id == channel.Id).DeleteAsync();
             _games.Remove(game);
-            await ReplyAsync($"The Games has stopped");
+            await ReplyAndDeleteAsync($"The Games has stopped", timeout: new TimeSpan(0, 0, 15));
         }
 
         [Command("Force")]
@@ -92,7 +92,7 @@ namespace DiscordBot.Modules
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
             {
-                await Context.Channel.SendMessageAsync(":x: You are not the gamemaster. " + Context.User.Mention);
+                await ReplyAndDeleteAsync(":x: You are not the gamemaster. " + Context.User.Mention, timeout: new TimeSpan(0, 0, 15));
                 return;
             }
 
@@ -101,7 +101,7 @@ namespace DiscordBot.Modules
                 return;
 
             await game.Force();
-            await ReplyAsync($"<#{game._RoomID}> has been forced");
+            await ReplyAndDeleteAsync($"<#{game._RoomID}> has been forced", timeout: new TimeSpan(0, 0, 15));
         }
 
         [Command("List")]
@@ -109,7 +109,7 @@ namespace DiscordBot.Modules
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
             {
-                await Context.Channel.SendMessageAsync(":x: You are not the gamemaster. " + Context.User.Mention);
+                await ReplyAndDeleteAsync(":x: You are not the gamemaster. " + Context.User.Mention, timeout: new TimeSpan(0, 0, 15));
                 return;
             }
 
@@ -119,14 +119,14 @@ namespace DiscordBot.Modules
 
             if(game.users.Count == 0)
             {
-                await ReplyAsync($"No Playes has joined");
+                await ReplyAndDeleteAsync($"No Playes has joined", timeout: new TimeSpan(0, 0, 15));
                 return;
             }
 
-            await ReplyAsync(
+            await ReplyAndDeleteAsync(
                 $"Players({game.users.Count}/{game.MaxUsers}) \n" +
                 "------------" + "\n" +
-                String.Join("\n", game.users.Select(x=> x.Username)));
+                String.Join("\n", game.users.Select(x=> x.Username)), timeout: new TimeSpan(0, 0, 15));
         }
 
         private bool UserIsGameMater(SocketGuildUser user)

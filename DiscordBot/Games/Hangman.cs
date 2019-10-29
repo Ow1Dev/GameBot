@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using DiscordBot.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +21,8 @@ namespace DiscordBot.Games
         private string[] _Words;
 
         private List<char> _GuessedLetter = new List<char>();
+        private char _lastGuess = '_';
+
         private List<ulong> _GuessedUser = new List<ulong>();
         private Dictionary<ulong, ushort> timeouts = new Dictionary<ulong, ushort>();
 
@@ -58,18 +59,19 @@ namespace DiscordBot.Games
                 while (!_IsForce && !_HasGuessed)
                 {
                     Task.Delay(1 * 1000).Wait();
-                    if (lastSelecetedUserID == SelecedUserID)
+                    var l = _GuessedLetter.Count > 0 ? _GuessedLetter.Last() : '_';
+                    if (_lastGuess == l)
                     {
                         counter++;
                     }
                     else
                     {
-                        lastSelecetedUserID = SelecedUserID;
                         counter = 0;
                     }
 
-                    if (counter > 15)
+                    if (counter > 10)
                     {
+                        counter = 0;
                         if(!timeouts.ContainsKey(SelecedUserID))
                         {
                             timeouts.Add(SelecedUserID, 0);
@@ -86,6 +88,7 @@ namespace DiscordBot.Games
                         } 
                         else
                         {
+                            Util.Debug.Log(timeouts[SelecedUserID]);
                             timeouts[SelecedUserID]++;
                             if (users.Count() > 1)
                             {
@@ -173,6 +176,8 @@ namespace DiscordBot.Games
             }
             else
             {
+                _lastGuess = letter;
+
                 _Lifes--;
                 if (_Lifes <= 0)
                 {
