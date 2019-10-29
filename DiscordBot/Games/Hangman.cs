@@ -14,24 +14,28 @@ namespace DiscordBot.Games
         private bool _HasGuessed = false;
         private bool _HasBegun = false;
 
-        private int _Lifes = 5;
         private string _res = "";
 
         private ulong SelecedUserID = 0;
+        private int _Lifes = 6;
         private string _Word = "Hangman";
         private string[] _Words;
 
         private List<char> _GuessedLetter = new List<char>();
         private List<ulong> _GuessedUser = new List<ulong>();
+        private Dictionary<ulong, ushort> timeouts = new Dictionary<ulong, ushort>();
 
-        public Hangman(ulong RoomID, DiscordSocketClient client, string[] Words, ushort MaxPlayer = 4, ushort MinPlayer = 1) 
+        public Hangman(ulong RoomID, DiscordSocketClient client, string[] Words, ushort MaxPlayer = 4, ushort MinPlayer = 1)
             : base(RoomID, client) { _Words = Words; _maxUsers = MaxPlayer; _minUsers = MinPlayer; }
 
         protected override void Startup()
         {
             Task.Delay(1 * 1000).Wait();
-            while(_isRunning)
+            while (_isRunning)
             {
+                int counter = 0;
+                ulong lastSelecetedUserID = 0;
+
                 waitingForPlayers();
 
                 string newWord = "";
@@ -39,7 +43,7 @@ namespace DiscordBot.Games
                 {
                     Random r = new Random();
                     newWord = _Words[r.Next(0, _Words.Count())];
-                } while (_Word == newWord || _Words.Count() > 1);
+                } while (_Word == newWord && _Words.Count() > 1);
                 _Word = newWord;
 
                 //Init Game
@@ -51,19 +55,56 @@ namespace DiscordBot.Games
                 _res = CheckContents(_Word, _GuessedLetter);
                 PrintGame("The Game Has Started").Wait();
                 SendMessege($"<@{SelecedUserID}> turn");
-                while(!_IsForce && !_HasGuessed)
+                while (!_IsForce && !_HasGuessed)
                 {
                     Task.Delay(1 * 1000).Wait();
+                    if (lastSelecetedUserID == SelecedUserID)
+                    {
+                        counter++;
+                    }
+                    else
+                    {
+                        lastSelecetedUserID = SelecedUserID;
+                        counter = 0;
+                    }
+
+                    if (counter > 15)
+                    {
+                        if(!timeouts.ContainsKey(SelecedUserID))
+                        {
+                            timeouts.Add(SelecedUserID, 0);
+                        }
+
+                        if(timeouts[SelecedUserID] >= 5)
+                        {
+                            var u = users.SingleOrDefault(x => x.Id == SelecedUserID);
+                            if(u != null)
+                            {
+                                Leave(u).Wait();
+                                timeouts.Remove(SelecedUserID);
+                            }
+                        } 
+                        else
+                        {
+                            timeouts[SelecedUserID]++;
+                            if (users.Count() > 1)
+                            {
+                                NextUser();
+                                SendMessege($"<@{SelecedUserID}> turn");
+                            }
+                        }
+                    }
                 }
-                if(_IsForce)
+                if (_IsForce)
                 {
                     SendMessege("The Game has been forced");
                 }
 
+                timeouts.Clear();
                 _HasBegun = false;
 
                 _res = "";
-                _Lifes = 5;
+                _Lifes = 6;
 
                 _HasGuessed = false;
                 _IsForce = false;
@@ -79,7 +120,7 @@ namespace DiscordBot.Games
                 return;
             }
 
-            if(message.Author.Id != SelecedUserID)
+            if (message.Author.Id != SelecedUserID)
             {
                 await message.DeleteAsync();
                 return;
@@ -97,7 +138,9 @@ namespace DiscordBot.Games
                 await message.DeleteAsync();
                 return;
             }
-            if(!_HasGuessed)
+
+            timeouts[message.Author.Id] = 0;
+            if (!_HasGuessed)
             {
                 GuessLetter(message.Content.ToUpper()[0]);
 
@@ -108,7 +151,7 @@ namespace DiscordBot.Games
 
         private void GuessLetter(char letter)
         {
-            if(_GuessedLetter.Any(x => x == letter))
+            if (_GuessedLetter.Any(x => x == letter))
             {
                 PrintGame($"Your All ready guessed {letter}").Wait();
                 return;
@@ -116,25 +159,27 @@ namespace DiscordBot.Games
 
             _GuessedLetter.Add(letter.ToString().ToUpper()[0]);
             _res = CheckContents(_Word, _GuessedLetter);
-            
-            if(_res == _Word)
+
+            if (_res == _Word)
             {
                 PrintGame($"Your won the word was **{_Word}**").Wait();
                 _HasGuessed = true;
                 return;
             }
-            
-            if(_Word.ToUpper().Contains(letter))
+
+            if (_Word.ToUpper().Contains(letter))
             {
                 PrintGame($"{letter} is in the word").Wait();
-            } else
+            }
+            else
             {
                 _Lifes--;
-                if(_Lifes <= 0)
+                if (_Lifes <= 0)
                 {
                     PrintGame($"You Lost the Game. The Word was **{_Word}**").Wait();
                     _HasGuessed = true;
-                } else
+                }
+                else
                 {
                     PrintGame($"{letter} is not in the word").Wait();
                 }
@@ -154,7 +199,7 @@ namespace DiscordBot.Games
             }
             .AddField("Lives: ", _Lifes, inline: true)
             .AddField("Gussed Letters", c != "" ? c : "you have not gussed anything", inline: true)
-            .WithColor(Color.Blue).Build();
+            .WithColor(new Color(255, 99, 71)).Build();
 
             await SendEmbedMessege(e);
         }
@@ -169,7 +214,7 @@ namespace DiscordBot.Games
                 {
                     Sout += "*";
                 }
-                else if(tempString[i] == ' ')
+                else if (tempString[i] == ' ')
                 {
                     Sout += "\u200b \u200b";
                 }
@@ -209,7 +254,8 @@ namespace DiscordBot.Games
 
         public void NextUser()
         {
-            if (users.Count < 2) {
+            if (users.Count < 2)
+            {
                 SelecedUserID = users[0].Id;
                 return;
             };
@@ -222,7 +268,7 @@ namespace DiscordBot.Games
             {
                 s = users[r.Next(MinUsers - 1, users.Count)].Id;
 
-            } while(SelecedUserID == s || _GuessedUser.Any(x=>x == s));
+            } while (SelecedUserID == s || _GuessedUser.Any(x => x == s));
 
             SelecedUserID = s;
             _GuessedUser.Add(s);
@@ -271,7 +317,7 @@ namespace DiscordBot.Games
             if (_HasBegun)
                 return;
 
-            if(users.Count >= _maxUsers)
+            if (users.Count >= _maxUsers)
             {
                 Console.WriteLine($"{_RoomID} : {message.Author.Username} becurse there are to many");
                 await SendMessegeAsync($"{message.Author.Username} can not join becourse the game is full");
@@ -291,22 +337,28 @@ namespace DiscordBot.Games
 
         private async Task OnLeave(SocketUserMessage message)
         {
-            if(!users.Any(x=>message.Author.Id == x.Id))
+            await Leave(message.Author);
+        }
+
+        public async Task Leave(SocketUser user)
+        {
+            if (!users.Any(x => user.Id == x.Id))
             {
-                Console.WriteLine($"{_RoomID} : {message.Author.Username} are not in the room");
-                await SendMessegeAsync($"{message.Author.Username} can not leave becourse there are not in this game");
+                Console.WriteLine($"{_RoomID} : {user.Username} are not in the room");
+                await SendMessegeAsync($"{user.Username} can not leave becourse there are not in this game");
                 return;
             }
 
-            Console.WriteLine($"{_RoomID} : {message.Author.Username} has left the game");
-            users.Remove(message.Author);
-            await SendMessegeAsync($"{message.Author.Username} has left the game");
+            Console.WriteLine($"{_RoomID} : {user.Username} has left the game");
+            users.Remove(user);
+            await SendMessegeAsync($"{user.Username} has left the game");
 
-            if(users.Count <= 0 && _HasBegun)
+            if (users.Count <= 0 && _HasBegun)
             {
                 await SendMessegeAsync("The Game Has stopped becourse thete are no more player");
                 _HasGuessed = true;
-            } else if(SelecedUserID == message.Author.Id)
+            }
+            else if (SelecedUserID == user.Id)
             {
                 NextUser();
                 await SendMessegeAsync($"<@{SelecedUserID}> turn");
