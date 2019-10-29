@@ -1,13 +1,19 @@
+FROM mcr.microsoft.com/dotnet/core/runtime:3.0 AS base
+WORKDIR /app
+EXPOSE 80
+EXPOSE 443
+
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0 AS build
-WORKDIR /app
-
-COPY DiscordBot.csproj .
-RUN dotnet restore
-
+WORKDIR /src
+COPY ["DiscordBot.csproj", "."]
+RUN dotnet restore "DiscordBot.csproj"
 COPY . .
-RUN dotnet publish -c Release -o out
+RUN dotnet build "DiscordBot.csproj" -c Release -o /app
 
-FROM mcr.microsoft.com/dotnet/core/samples:3.0 AS runtime
+FROM build AS publish
+RUN dotnet publish "DiscordBot.csproj" -c Release -o /app
+
+FROM base AS final
 WORKDIR /app
-COPY --from=build /bin/Release/netcoreapp3.0t ./
+COPY --from=publish /app .
 ENTRYPOINT ["dotnet", "DiscordBot.dll"]

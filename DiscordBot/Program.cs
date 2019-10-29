@@ -31,15 +31,15 @@ namespace DiscordBot
 
         public async Task RunBotAsync()
         {
-            string lines = File.ReadAllText("./config.txt");
-            int start = lines.IndexOf("BotToken=");
-            if(start < 0)
-            {
-                Console.WriteLine("Can not find botToken");
-                return;
-            }
+            //string lines = File.ReadAllText("./config.txt");
+            //int start = lines.IndexOf("BotToken=");
+            //if(start < 0)
+            //{
+            //    Console.WriteLine("Can not find botToken");
+            //    return;
+            //}
 
-            string bott = lines.Substring(9, lines.Length - 9);
+            //string bott = lines.Substring(9, lines.Length - 9);
 
             _client = new DiscordSocketClient();
             _commands = new CommandService();
@@ -50,7 +50,7 @@ namespace DiscordBot
                 .AddSingleton(_commands)
                 .BuildServiceProvider();
 
-            string botToken = bott;
+            string botToken = APIKey.BOT_TOKEN;
 
             _client.Log += _client_Log;
 

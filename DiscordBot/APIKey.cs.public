@@ -1,0 +1,7 @@
+﻿namespace DiscordBot
+{
+    public class APIKey
+    {
+        public const string BOT_TOKEN = "NjM2NDQ2NTY1MDkwNzIxNzk0.XbbuCA.g4oMCSKbzr3rgFz9Q4orxIBPuIY";
+    }
+}

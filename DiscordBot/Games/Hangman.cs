@@ -39,7 +39,7 @@ namespace DiscordBot.Games
                 {
                     Random r = new Random();
                     newWord = _Words[r.Next(0, _Words.Count())];
-                } while (_Word == newWord);
+                } while (_Word == newWord || _Words.Count() > 1);
                 _Word = newWord;
 
                 //Init Game
@@ -305,7 +305,7 @@ namespace DiscordBot.Games
             if(users.Count <= 0 && _HasBegun)
             {
                 await SendMessegeAsync("The Game Has stopped becourse thete are no more player");
-                _IsForce = true;
+                _HasGuessed = true;
             } else if(SelecedUserID == message.Author.Id)
             {
                 NextUser();
