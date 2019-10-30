@@ -31,16 +31,6 @@ namespace DiscordBot
 
         public async Task RunBotAsync()
         {
-            //string lines = File.ReadAllText("./config.txt");
-            //int start = lines.IndexOf("BotToken=");
-            //if(start < 0)
-            //{
-            //    Console.WriteLine("Can not find botToken");
-            //    return;
-            //}
-
-            //string bott = lines.Substring(9, lines.Length - 9);
-
             _client = new DiscordSocketClient();
             _commands = new CommandService();
 

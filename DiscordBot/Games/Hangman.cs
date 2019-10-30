@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DiscordBot.Games
@@ -35,7 +36,6 @@ namespace DiscordBot.Games
             while (_isRunning)
             {
                 int counter = 0;
-                ulong lastSelecetedUserID = 0;
 
                 waitingForPlayers();
 
@@ -59,42 +59,55 @@ namespace DiscordBot.Games
                 while (!_IsForce && !_HasGuessed)
                 {
                     Task.Delay(1 * 1000).Wait();
-                    var l = _GuessedLetter.Count > 0 ? _GuessedLetter.Last() : '_';
-                    if (_lastGuess == l)
+                    if (!_IsForce)
                     {
-                        counter++;
-                    }
-                    else
-                    {
-                        counter = 0;
-                    }
 
-                    if (counter > 10)
-                    {
-                        counter = 0;
-                        if(!timeouts.ContainsKey(SelecedUserID))
+                        var l = _GuessedLetter.Count > 0 ? _GuessedLetter.Last() : '_';
+                        if (_lastGuess == l)
                         {
-                            timeouts.Add(SelecedUserID, 0);
+                            counter++;
                         }
-
-                        if(timeouts[SelecedUserID] >= 5)
-                        {
-                            var u = users.SingleOrDefault(x => x.Id == SelecedUserID);
-                            if(u != null)
-                            {
-                                Leave(u).Wait();
-                                timeouts.Remove(SelecedUserID);
-                            }
-                        } 
                         else
                         {
-                            Util.Debug.Log(timeouts[SelecedUserID]);
-                            timeouts[SelecedUserID]++;
-                            if (users.Count() > 1)
+                            _lastGuess = l;
+                            counter = 0;
+                        }
+
+                        if (counter > 60)
+                        {
+                            counter = 0;
+                            if (!timeouts.ContainsKey(SelecedUserID))
                             {
-                                NextUser();
-                                SendMessege($"<@{SelecedUserID}> turn");
+                                timeouts.Add(SelecedUserID, 0);
                             }
+
+                            if (timeouts[SelecedUserID] >= 5)
+                            {
+                                var u = users.SingleOrDefault(x => x.Id == SelecedUserID);
+                                if (u != null)
+                                {
+                                    Leave(u).Wait();
+                                    timeouts.Remove(SelecedUserID);
+                                }
+                            }
+                            else
+                            {
+                                Util.Debug.Log(timeouts[SelecedUserID]);
+                                timeouts[SelecedUserID]++;
+                                if (users.Count() > 1)
+                                {
+                                    NextUser();
+                                    SendMessege($"<@{SelecedUserID}> turn");
+                                }
+                            }
+                        }
+                        else if (counter == 30)
+                        {
+                            SendMessege($"You will lose the turn about 30 secounds");
+                        }
+                        else if (counter == 50)
+                        {
+                            SendMessege($"You will lose the turn about 10 secounds");
                         }
                     }
                 }
@@ -107,6 +120,7 @@ namespace DiscordBot.Games
                 _HasBegun = false;
 
                 _res = "";
+                _lastGuess = '_';
                 _Lifes = 6;
 
                 _HasGuessed = false;
@@ -131,8 +145,8 @@ namespace DiscordBot.Games
 
             if (message.Content.ToLower() == _Word.ToLower())
             {
-                await PrintGame($"Your won the word was **{_Word}**");
                 _HasGuessed = true;
+                await PrintGame($"Your won the word was **{_Word}**");
                 return;
             }
 
@@ -145,6 +159,11 @@ namespace DiscordBot.Games
             timeouts[message.Author.Id] = 0;
             if (!_HasGuessed)
             {
+                if (!Regex.IsMatch(message.Content.ToUpper(), @"[A-Zæøå]+"))
+                {
+                    await message.DeleteAsync();
+                    return;
+                }
                 GuessLetter(message.Content.ToUpper()[0]);
 
                 NextUser();
@@ -163,10 +182,10 @@ namespace DiscordBot.Games
             _GuessedLetter.Add(letter.ToString().ToUpper()[0]);
             _res = CheckContents(_Word, _GuessedLetter);
 
-            if (_res == _Word)
+            if (_res.ToUpper() == _Word.ToUpper())
             {
-                PrintGame($"Your won the word was **{_Word}**").Wait();
                 _HasGuessed = true;
+                PrintGame($"Your won the word was **{_Word}**").Wait();
                 return;
             }
 
@@ -176,13 +195,11 @@ namespace DiscordBot.Games
             }
             else
             {
-                _lastGuess = letter;
-
                 _Lifes--;
                 if (_Lifes <= 0)
                 {
-                    PrintGame($"You Lost the Game. The Word was **{_Word}**").Wait();
                     _HasGuessed = true;
+                    PrintGame($"You Lost the Game. The Word was **{_Word}**").Wait();
                 }
                 else
                 {
@@ -195,16 +212,45 @@ namespace DiscordBot.Games
         private async Task PrintGame(string text)
         {
             var c = string.Join(',', _GuessedLetter.ToArray());
-            var p = PrintNon(_res);
+            var p = !_HasGuessed ? PrintNon(_res) : PrintNon(_Word);
+
+            string imgurl = "";
+            switch (_Lifes)
+            {
+                case 1:
+                    imgurl = "https://i.imgur.com/qpZWkKj.png";
+                    break;
+                case 2:
+                    imgurl = "https://i.imgur.com/Dv9xx5n.png";
+                    break;
+                case 3:
+                    imgurl = "https://i.imgur.com/5YS0NrP.png";
+                    break;
+                case 4:
+                    imgurl = "https://i.imgur.com/pJEhAsC.png";
+                    break;
+                case 5:
+                    imgurl = "https://i.imgur.com/9nmmQQX.png";
+                    break;
+                case 6:
+                    imgurl = "https://i.imgur.com/VLkXPOD.png";
+                    break;
+                default:
+                    imgurl = "https://i.imgur.com/Hi7YyJy.png";
+                    break;
+
+            }
 
             var e = new EmbedBuilder
             {
                 Title = text,
-                Description = p
+                Description = p,
+                ThumbnailUrl = imgurl
+
             }
             .AddField("Lives: ", _Lifes, inline: true)
             .AddField("Gussed Letters", c != "" ? c : "you have not gussed anything", inline: true)
-            .WithColor(new Color(255, 99, 71)).Build();
+            .WithColor(_HasGuessed ? Color.Green : new Color(255, 99, 71)).Build();
 
             await SendEmbedMessege(e);
         }
@@ -235,12 +281,11 @@ namespace DiscordBot.Games
 
         private string CheckContents(string word, List<Char> guesses)
         {
-            char[] specials = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '-', '_', '?', ';', ':', '<', '>', ' ', '\'' };
-            char[] wordArr = word.ToUpper().ToCharArray();
             string result = "";
+            char[] wordArr = word.ToUpper().ToArray();
             for (int i = 0; i < wordArr.Length; i++)
             {
-                if (specials.Contains(wordArr[i]))
+                if (!Regex.IsMatch(wordArr[i].ToString(), @"[A-Zæøå]"))
                 {
                     result += word[i];
                 }
@@ -321,6 +366,17 @@ namespace DiscordBot.Games
         {
             if (_HasBegun)
                 return;
+
+            for (int GameIndex = 0; GameIndex < Modules.GameInteractive._games.Count; GameIndex++)
+            {
+                for (int uIndex = 0; uIndex < Modules.GameInteractive._games[GameIndex].users.Count; uIndex++)
+                {
+                    if(Modules.GameInteractive._games[GameIndex].users[uIndex].Id == message.Author.Id)
+                    {
+                        await SendMessegeAsync($"{message.Author.Username} can not join becourse his already in game");
+                    }
+                }
+            }
 
             if (users.Count >= _maxUsers)
             {
