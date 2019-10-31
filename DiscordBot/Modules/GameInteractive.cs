@@ -19,9 +19,9 @@ namespace DiscordBot.Modules
         public static List<Data.Game> _games = new List<Data.Game>();
 
         [Command("Start")]
-        [Name("Game Start <Catergory>")]
+        [Name("Game Start <Category>")]
         [Summary("Starts a game with a catergory")]
-        public async Task Start(string Catergory)
+        public async Task Start(string Category)
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
             {
@@ -29,29 +29,29 @@ namespace DiscordBot.Modules
                 return;
             }
 
-            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Catergory/";
-            if (!File.Exists(folderPath + Catergory + ".caty"))
+            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Category";
+            if (!File.Exists(folderPath + Category + ".caty"))
             {
-                await ReplyAndDeleteAsync($"Catergory does not exist", timeout: new TimeSpan(0, 0, 15));
+                await ReplyAndDeleteAsync($"Category does not exist", timeout: new TimeSpan(0, 0, 15));
                 return;
             }
 
 
-            var words = File.ReadAllLines(folderPath + Catergory + ".caty");
+            var words = File.ReadAllLines(folderPath + Category + ".caty");
             if(words.Length < 1)
             {
-                await ReplyAndDeleteAsync($"There are no words in **{Catergory}**", timeout: new TimeSpan(0, 0, 15));
+                await ReplyAndDeleteAsync($"There are no words in **{Category}**", timeout: new TimeSpan(0, 0, 15));
                 return;
             }
 
             var c = Context.Guild.CategoryChannels.SingleOrDefault(x => x.Name == "Games");
             if(c == null)
             {
-                Console.WriteLine("There is no Catergory named Games");
+                Console.WriteLine("There is no Category named Games");
                 return;
             }
 
-            RestTextChannel Room = await Context.Guild.CreateTextChannelAsync($"Hangman-{Catergory}-{_games.Count + 1}",x => {
+            RestTextChannel Room = await Context.Guild.CreateTextChannelAsync($"Hangman-{Category}-{_games.Count + 1}",x => {
                 x.CategoryId = c.Id;
             });
 
@@ -89,7 +89,7 @@ namespace DiscordBot.Modules
 
                 int lastindex = filename.LastIndexOf('.') + 1;
                 string catergoryName = filename.Substring(0, filename.Length - (filename.Length - filename.LastIndexOf('.')));
-                string filepath = @$"{ Directory.GetCurrentDirectory()}/Catergory/{catergoryName}.caty"; 
+                string filepath = @$"{ Directory.GetCurrentDirectory()}/Category/{catergoryName}.caty"; 
                 
                 if(filename.Substring(filename.LastIndexOf('.'), filename.Length - filename.LastIndexOf('.')) != ".txt")
                 {
@@ -101,9 +101,9 @@ namespace DiscordBot.Modules
                 download = download.Replace("\r\n", "%&");
                 var _words = download.Split("%&");
 
-                if(!Directory.Exists($@"{ Directory.GetCurrentDirectory()}/Catergory/"))
+                if(!Directory.Exists($@"{ Directory.GetCurrentDirectory()}/Category/"))
                 {
-                    Directory.CreateDirectory($@"{ Directory.GetCurrentDirectory()}/Catergory/");
+                    Directory.CreateDirectory($@"{ Directory.GetCurrentDirectory()}/Category/");
                 }
 
                 using (System.IO.StreamWriter file = new System.IO.StreamWriter(filepath, append: false))
@@ -132,10 +132,10 @@ namespace DiscordBot.Modules
                 return;
             }
 
-            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Catergory/";
+            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Category/";
             if(!File.Exists(folderPath + name + ".caty"))
             {
-                await ReplyAndDeleteAsync($"Catergory does not exist", timeout: new TimeSpan(0, 0, 15));
+                await ReplyAndDeleteAsync($"Category does not exist", timeout: new TimeSpan(0, 0, 15));
                 return;
             }
 
@@ -155,7 +155,7 @@ namespace DiscordBot.Modules
             }
 
             string result = "";
-            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Catergory/";
+            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Category/";
 
             if (!Directory.Exists("FolderPath: " + folderPath))
             {
@@ -167,7 +167,7 @@ namespace DiscordBot.Modules
             var files = Directory.GetFiles(folderPath);
             if(files.Length < 1)
             {
-                await ReplyAndDeleteAsync($"No Catergory", timeout: new TimeSpan(0, 0, 15));
+                await ReplyAndDeleteAsync($"No Category", timeout: new TimeSpan(0, 0, 15));
                 return;                                                                     
             }
             

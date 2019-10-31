@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DiscordBot.Modules
 {
-    public class Ping : InteractiveBase<SocketCommandContext>
+    public class Misc : InteractiveBase<SocketCommandContext>
     {
         [Command("Say", RunMode = RunMode.Async)]
         [RequireUserPermission(Discord.GuildPermission.Administrator)]
