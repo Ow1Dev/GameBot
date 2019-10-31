@@ -1,9 +1,7 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
+﻿using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
-using DiscordBot.Data;
 using DiscordBot.Games;
 using System;
 using System.Collections.Generic;
@@ -31,7 +29,7 @@ namespace DiscordBot.Modules
                 return;
             }
 
-            string folderPath = @$"{ Directory.GetCurrentDirectory()}\Catergory\";
+            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Catergory/";
             if (!File.Exists(folderPath + Catergory + ".caty"))
             {
                 await ReplyAndDeleteAsync($"Catergory does not exist", timeout: new TimeSpan(0, 0, 15));
@@ -91,7 +89,7 @@ namespace DiscordBot.Modules
 
                 int lastindex = filename.LastIndexOf('.') + 1;
                 string catergoryName = filename.Substring(0, filename.Length - (filename.Length - filename.LastIndexOf('.')));
-                string filepath = @$"{ Directory.GetCurrentDirectory()}\Catergory\{catergoryName}.caty"; 
+                string filepath = @$"{ Directory.GetCurrentDirectory()}/Catergory/{catergoryName}.caty"; 
                 
                 if(filename.Substring(filename.LastIndexOf('.'), filename.Length - filename.LastIndexOf('.')) != ".txt")
                 {
@@ -103,9 +101,9 @@ namespace DiscordBot.Modules
                 download = download.Replace("\r\n", "%&");
                 var _words = download.Split("%&");
 
-                if(!Directory.Exists($@"{ Directory.GetCurrentDirectory()}\Catergory\"))
+                if(!Directory.Exists($@"{ Directory.GetCurrentDirectory()}/Catergory/"))
                 {
-                    Directory.CreateDirectory($@"{ Directory.GetCurrentDirectory()}\Catergory\");
+                    Directory.CreateDirectory($@"{ Directory.GetCurrentDirectory()}/Catergory/");
                 }
 
                 using (System.IO.StreamWriter file = new System.IO.StreamWriter(filepath, append: false))
@@ -134,7 +132,7 @@ namespace DiscordBot.Modules
                 return;
             }
 
-            string folderPath = @$"{ Directory.GetCurrentDirectory()}\Catergory\";
+            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Catergory/";
             if(!File.Exists(folderPath + name + ".caty"))
             {
                 await ReplyAndDeleteAsync($"Catergory does not exist", timeout: new TimeSpan(0, 0, 15));
@@ -157,7 +155,15 @@ namespace DiscordBot.Modules
             }
 
             string result = "";
-            string folderPath = @$"{ Directory.GetCurrentDirectory()}\Catergory\";
+            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Catergory/";
+
+            if (!Directory.Exists("FolderPath: " + folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            Util.Debug.Log(folderPath);
+
             var files = Directory.GetFiles(folderPath);
             if(files.Length < 1)
             {
@@ -165,10 +171,14 @@ namespace DiscordBot.Modules
                 return;                                                                     
             }
             
+            Util.Debug.Log("Files: " + folderPath);
+
             for (int i = 0; i < files.Length; i++)
             {
-                result += files[i].Substring(files[i].LastIndexOf("\\") + 1, files[i].Length - (files[i].LastIndexOf("\\") + 1) - 5) + "\n" ;
+                result += files[i].Substring(files[i].LastIndexOf("/") + 1, files[i].Length - (files[i].LastIndexOf("/") + 1) - 5) + "\n" ;
             }
+
+            Util.Debug.Log("Result: " + result);
             await ReplyAndDeleteAsync(result, timeout: new TimeSpan(0, 0, 15));
         }
 

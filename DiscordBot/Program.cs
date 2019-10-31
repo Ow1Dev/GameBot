@@ -47,6 +47,8 @@ namespace DiscordBot
 
             await _client.LoginAsync(Discord.TokenType.Bot, botToken);
             await _client.StartAsync();
+            await _client.SetGameAsync("Hangman");
+            
 
             await Task.Delay(-1);
         }

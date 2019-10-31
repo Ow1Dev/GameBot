@@ -32,6 +32,7 @@ namespace DiscordBot.Games
 
         protected override void Startup()
         {
+            Util.Debug.Log("Words:" + string.Join(',', _Words.ToArray()));
             Task.Delay(1 * 1000).Wait();
             while (_isRunning)
             {
@@ -47,6 +48,8 @@ namespace DiscordBot.Games
                 } while (_Word == newWord && _Words.Count() > 1);
                 _Word = newWord;
 
+                Util.Debug.Log("Word" + _Word);
+                
                 //Init Game
                 _GuessedLetter.Clear();
                 _HasBegun = true;
@@ -247,7 +250,6 @@ namespace DiscordBot.Games
                 default:
                     imgurl = "https://i.imgur.com/Hi7YyJy.png";
                     break;
-
             }
 
             var e = new EmbedBuilder
@@ -434,7 +436,6 @@ namespace DiscordBot.Games
                 await SendMessegeAsync($"<@{SelecedUserID}> turn");
             }
         }
-
         #endregion
     }
 }
