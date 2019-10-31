@@ -21,6 +21,8 @@ namespace DiscordBot.Modules
         public static List<Data.Game> _games = new List<Data.Game>();
 
         [Command("Start")]
+        [Name("Game Start <Catergory>")]
+        [Summary("Starts a game with a catergory")]
         public async Task Start(string Catergory)
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
@@ -69,6 +71,8 @@ namespace DiscordBot.Modules
         }
 
         [Command("Upload", RunMode = RunMode.Async)]
+        [Name("Game Upload")]
+        [Summary("Upload a catergory")]
         public async Task UploadFile()
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
@@ -120,6 +124,8 @@ namespace DiscordBot.Modules
         }
 
         [Command("Upload Delete", RunMode = RunMode.Async)]
+        [Name("Game Upload Delete")]
+        [Summary("Delete a catergory")]
         public async Task DeleteFile(string name)
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
@@ -140,6 +146,8 @@ namespace DiscordBot.Modules
         }
 
         [Command("Upload List", RunMode = RunMode.Async)]
+        [Name("Game Upload List")]
+        [Summary("Get a list of catergory")]
         public async Task ListFile()
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
@@ -164,7 +172,9 @@ namespace DiscordBot.Modules
             await ReplyAndDeleteAsync(result, timeout: new TimeSpan(0, 0, 15));
         }
 
-        [Command("Stop")] 
+        [Command("Stop")]
+        [Name("Game Stop <channel>")]
+        [Summary("stops a game")]
         public async Task Stop(SocketChannel channel)
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
@@ -184,6 +194,8 @@ namespace DiscordBot.Modules
         }
 
         [Command("Force")]
+        [Name("Game Force <channel>")]
+        [Summary("Forces a new game")]
         public async Task Force(SocketChannel channel)
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))
@@ -196,11 +208,13 @@ namespace DiscordBot.Modules
             if (game == null)
                 return;
 
-            await game.Force();
+            game.Force();
             await ReplyAndDeleteAsync($"<#{game._RoomID}> has been forced", timeout: new TimeSpan(0, 0, 15));
         }
 
         [Command("List")]
+        [Name("Game List <channel>")]
+        [Summary("Forces a new game in a game")]
         public async Task ListPlayers(SocketChannel channel)
         {
             if (!UserIsGameMater((SocketGuildUser)Context.User))

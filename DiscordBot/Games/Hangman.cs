@@ -103,11 +103,11 @@ namespace DiscordBot.Games
                         }
                         else if (counter == 30)
                         {
-                            SendMessege($"You will lose the turn about 30 secounds");
+                            SendMessege($"You will lose the turn in about 30 secounds");
                         }
                         else if (counter == 50)
                         {
-                            SendMessege($"You will lose the turn about 10 secounds");
+                            SendMessege($"You will lose the turn in about 10 secounds");
                         }
                     }
                 }
@@ -115,6 +115,8 @@ namespace DiscordBot.Games
                 {
                     SendMessege("The Game has been forced");
                 }
+
+                CleanRoom().Wait();
 
                 timeouts.Clear();
                 _HasBegun = false;
@@ -126,6 +128,13 @@ namespace DiscordBot.Games
                 _HasGuessed = false;
                 _IsForce = false;
             }
+        }
+
+        private async Task CleanRoom()
+        {
+            var room = getRoom();
+            var messages = await room.GetMessagesAsync(100 + 1).FlattenAsync();
+            await room.DeleteMessagesAsync(messages);
         }
 
         protected override async Task _MessegeResive(SocketUserMessage message)
@@ -146,7 +155,7 @@ namespace DiscordBot.Games
             if (message.Content.ToLower() == _Word.ToLower())
             {
                 _HasGuessed = true;
-                await PrintGame($"Your won the word was **{_Word}**");
+                await PrintGame($"Your guess the word, the word was **{_Word}**");
                 return;
             }
 
@@ -185,13 +194,13 @@ namespace DiscordBot.Games
             if (_res.ToUpper() == _Word.ToUpper())
             {
                 _HasGuessed = true;
-                PrintGame($"Your won the word was **{_Word}**").Wait();
+                PrintGame($"Your guess the word, the word was **{_Word}**").Wait();
                 return;
             }
 
             if (_Word.ToUpper().Contains(letter))
             {
-                PrintGame($"{letter} is in the word").Wait();
+                PrintGame($"**{letter}** is in the word").Wait();
             }
             else
             {
@@ -203,7 +212,7 @@ namespace DiscordBot.Games
                 }
                 else
                 {
-                    PrintGame($"{letter} is not in the word").Wait();
+                    PrintGame($"**{letter}** is not in the word").Wait();
                 }
 
             }

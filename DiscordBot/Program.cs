@@ -5,7 +5,6 @@ using DiscordBot.Data;
 using DiscordBot.Modules;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -26,7 +25,7 @@ namespace DiscordBot
         }
 
         private DiscordSocketClient _client;
-        private CommandService _commands;
+        public static CommandService _commands;
         public IServiceProvider _services;
 
         public async Task RunBotAsync()
@@ -74,7 +73,12 @@ namespace DiscordBot
             Game game = GameInteractive._games.SingleOrDefault(x => x._RoomID == message.Channel.Id);
             if(game != null)
             {
-                game.MessegeResive(message);
+                    game.MessegeResive(message);
+                return;
+            }
+
+            if(!message.Channel.Name.Equals("gamecontrol"))
+            {
                 return;
             }
 

@@ -32,13 +32,18 @@ namespace DiscordBot.Data
 
         public async Task SendMessegeAsync(string text)
         {
-            SocketGuild guild = _client.Guilds.First();
-            SocketTextChannel textc = guild.GetTextChannel(_RoomID);
-
+            var textc = getRoom();
             await textc.SendMessageAsync(text);
         }
 
-        public async Task Force()
+        public SocketTextChannel getRoom()
+        {
+            SocketGuild guild = _client.Guilds.First();
+            return guild.GetTextChannel(_RoomID);
+
+        }
+
+        public void Force()
         {
             _IsForce = true;
         }
