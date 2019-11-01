@@ -119,7 +119,6 @@ namespace DiscordBot.Games
                     SendMessege("The Game has been forced");
                 }
 
-                CleanRoom().Wait();
 
                 timeouts.Clear();
                 _HasBegun = false;
@@ -355,6 +354,7 @@ namespace DiscordBot.Games
                 SendMessege("The Game begins in 1 secounds");
                 Task.Delay(1 * 1000).Wait();
             } while (users.Count < MinUsers);
+            CleanRoom().Wait();
             _IsDeleting = false;
         }
 
@@ -385,6 +385,7 @@ namespace DiscordBot.Games
                     if(Modules.GameInteractive._games[GameIndex].users[uIndex].Id == message.Author.Id)
                     {
                         await SendMessegeAsync($"{message.Author.Username} can not join becourse his already in game");
+                        return;
                     }
                 }
             }

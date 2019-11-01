@@ -29,7 +29,7 @@ namespace DiscordBot.Modules
                 return;
             }
 
-            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Category";
+            string folderPath = @$"{ Directory.GetCurrentDirectory()}/Category/";
             if (!File.Exists(folderPath + Category + ".caty"))
             {
                 await ReplyAndDeleteAsync($"Category does not exist", timeout: new TimeSpan(0, 0, 15));
